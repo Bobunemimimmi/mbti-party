@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<!-- MBTI Party v1.1 · 单文件正式版 · 依据 PRD v1.1 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="93 题完整版 MBTI 风格性格测评，单文件网页，零依赖、完全离线可用，聚会破冰娱乐工具。仅供娱乐参考。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231C1B1A'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' font-weight='bold' text-anchor='middle' fill='%23FF6B5E'%3EM%3C/text%3E%3C/svg%3E">
+<title>MBTI 性格测评 · 聚会版</title>
+<style>
+  :root{
+    --paper:#FBF9F4; --ink:#1C1B1A; --sub:#6E6A63; --line:#E7E2D8; --card:#FFFFFF;
+    --e:#FF6B5E; --i:#4F5DDB; --s:#E9A13B; --n:#8B5CF6; --t:#2E9E8F; --f:#F2617A; --j:#3A8FD9; --p:#F0B429;
+    --serif:Georgia,"Times New Roman","Songti SC","SimSun",serif;
+    --sans:"PingFang SC","Microsoft YaHei","HarmonyOS Sans SC",system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden}
+  .screen{min-height:100dvh;display:none;flex-direction:column}
+  .screen.active{display:flex;animation:fadein .35s ease}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  .wrap{flex:1;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:560px;margin:0 auto;padding:32px 22px}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible,a:focus-visible{outline:3px solid var(--i);outline-offset:3px;border-radius:8px}
+
+  /* ── 欢迎页 ── */
+  .eyebrow{font-size:12px;letter-spacing:.35em;color:var(--sub);text-transform:uppercase}
+  .hero-mbti{font-family:var(--serif);font-size:clamp(72px,20vw,124px);font-weight:700;line-height:1;margin:10px 0 6px;letter-spacing:.02em}
+  .hero-mbti span{display:inline-block}
+  .hero-mbti .l-m{color:var(--e)} .hero-mbti .l-b{color:var(--s)} .hero-mbti .l-t{color:var(--t)} .hero-mbti .l-i{color:var(--j)}
+  .hero-sub{font-size:16px;color:var(--ink);margin-bottom:14px}
+  .facts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:30px}
+  .fact{font-size:12.5px;color:var(--sub);border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px}
+  .btn{display:block;width:100%;border:none;border-radius:14px;padding:17px 20px;font-size:16.5px;font-weight:600;transition:transform .12s ease,box-shadow .12s ease}
+  .btn:active{transform:scale(.98)}
+  .btn-primary{background:var(--ink);color:var(--paper)}
+  .btn-primary:hover{box-shadow:0 6px 18px rgba(28,27,26,.25)}
+  .btn-ghost{background:transparent;color:var(--sub);border:1.5px solid var(--line);font-weight:500;margin-top:10px;padding:13px 20px}
+  .fineprint{margin-top:22px;font-size:12px;color:var(--sub);text-align:center}
+
+  /* ── 答题页 ── */
+  #screen-quiz .wrap{justify-content:flex-start;padding-top:0;max-width:600px}
+  .quiz-top{position:sticky;top:0;background:linear-gradient(var(--paper) 78%,transparent);padding:18px 0 14px;z-index:2}
+  .quiz-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .quiz-count{font-family:var(--serif);font-size:15px;color:var(--sub)}
+  .quiz-count b{font-size:22px;color:var(--ink)}
+  .link-restart{background:none;border:none;font-size:12.5px;color:var(--sub);text-decoration:underline;text-underline-offset:3px}
+  .track{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+  .fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--e),var(--s),var(--t),var(--j));transition:width .3s ease}
+  .qtext{font-size:clamp(21px,5.6vw,27px);font-weight:700;line-height:1.5;margin:38px 0 30px;min-height:4.2em}
+  .opts{display:flex;flex-direction:column;gap:14px}
+  .opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:18px 18px;font-size:16.5px;line-height:1.5;color:var(--ink);transition:border-color .12s,transform .12s}
+  .opt:hover{border-color:var(--ink)}
+  .opt:active{transform:scale(.985)}
+  .opt .key{flex:none;width:34px;height:34px;border-radius:10px;border:2px solid var(--line);display:grid;place-items:center;font-family:var(--serif);font-size:17px;font-weight:700;color:var(--sub)}
+  .opt.selected{border-color:var(--ink);background:#F6F2E9}
+  .opt.selected .key{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .btn-prev{align-self:flex-start;background:none;border:none;color:var(--sub);font-size:14px;padding:10px 6px;margin-top:2px;text-decoration:underline;text-underline-offset:3px}
+  .btn-prev[hidden]{display:none}
+  .quiz-foot{margin-top:auto;padding:26px 0 8px;text-align:center;font-size:12px;color:var(--sub)}
+
+  /* ── 结果页 ── */
+  #screen-result .wrap{justify-content:center;text-align:center}
+  .type-letters{font-family:var(--serif);font-size:clamp(84px,24vw,150px);font-weight:700;line-height:1;letter-spacing:.03em}
+  .type-name{font-size:clamp(24px,6vw,30px);font-weight:700;margin-top:8px}
+  .type-tag{font-size:13.5px;color:var(--sub);margin-top:4px}
+  .spectra{margin:36px 0 8px;display:flex;flex-direction:column;gap:22px;text-align:left}
+  .spec-head{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:7px}
+  .spec-head .pct{font-variant-numeric:tabular-nums;font-family:var(--serif)}
+  .spec-bar{position:relative;height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+  .spec-bar .left-fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px 0 0 99px}
+  .spec-bar .axis{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--paper);border-radius:2px}
+  .spec-cap{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:5px}
+  .result-note{margin:22px 0 18px;font-size:12.5px;color:var(--sub)}
+
+  .toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);font-size:13.5px;padding:10px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s ease;z-index:9}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  .confirm-mask{position:fixed;inset:0;background:rgba(28,27,26,.45);display:none;place-items:center;z-index:8;padding:24px}
+  .confirm-mask.show{display:grid}
+  .confirm-box{background:var(--card);border-radius:16px;padding:26px 24px;max-width:340px;width:100%;text-align:center}
+  .confirm-box p{font-size:15px;font-weight:600;margin-bottom:4px}
+  .confirm-box .hint{font-size:13px;color:var(--sub);margin-bottom:18px}
+  .confirm-box .row{display:flex;gap:10px}
+  .confirm-box .row .btn{padding:12px;font-size:14.5px}
+</style>
+</head>
+<body>
+
+<!-- 欢迎页 -->
+<section class="screen active" id="screen-welcome">
+  <div class="wrap">
+    <div class="eyebrow">MBTI 性格测评 · 聚会版</div>
+    <h1 class="hero-mbti" aria-label="MBTI"><span class="l-m">M</span><span class="l-b">B</span><span class="l-t">T</span><span class="l-i">I</span></h1>
+    <p class="hero-sub">93 道题，看清你站在每条性格光谱的哪一端。</p>
+    <div class="facts">
+      <span class="fact">93 题 · 约 12 分钟</span>
+      <span class="fact">进度自动保存</span>
+      <span class="fact">离线可用 · 数据不出设备</span>
+    </div>
+    <button class="btn btn-primary" id="btn-start">开始测评</button>
+    <button class="btn btn-ghost" id="btn-fresh" hidden>不继续了，从头开始</button>
+    <p class="fineprint">本测评仅供娱乐参考，不构成任何专业心理结论。</p>
+  </div>
+</section>
+
+<!-- 答题页 -->
+<section class="screen" id="screen-quiz">
+  <div class="wrap">
+    <div class="quiz-top">
+      <div class="quiz-meta">
+        <span class="quiz-count">第 <b id="q-now">1</b><span id="q-total"> / 93</span> 题</span>
+        <button class="link-restart" id="btn-quit">重新开始</button>
+      </div>
+      <div class="track"><div class="fill" id="q-fill"></div></div>
+    </div>
+    <p class="qtext" id="q-text"></p>
+    <div class="opts">
+      <button class="opt" id="opt-a"><span class="key">A</span><span id="opt-a-text"></span></button>
+      <button class="opt" id="opt-b"><span class="key">B</span><span id="opt-b-text"></span></button>
+    </div>
+    <button class="btn-prev" id="btn-prev">← 上一题（可修改答案）</button>
+    <p class="quiz-foot" id="quiz-foot">选择后自动进入下一题 · 进度实时保存</p>
+  </div>
+</section>
+
+<!-- 结果页 -->
+<section class="screen" id="screen-result">
+  <div class="wrap">
+    <div class="eyebrow">你的类型</div>
+    <div class="type-letters" id="r-letters"></div>
+    <h2 class="type-name" id="r-name"></h2>
+    <p class="type-tag" id="r-tag"></p>
+    <div class="spectra" id="r-spectra"></div>
+    <p class="result-note">MBTI 仅供娱乐参考，不构成任何专业心理测评结论。</p>
+    <button class="btn btn-primary" id="btn-again">重新测一次</button>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div class="confirm-mask" id="mask-quit">
+  <div class="confirm-box">
+    <p>放弃这次测评？</p>
+    <p class="hint">当前作答记录将被清空，无法恢复。</p>
+    <div class="row">
+      <button class="btn btn-ghost" style="margin-top:0" id="quit-no">再想想</button>
+      <button class="btn btn-primary" id="quit-yes">清空重来</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================= 题库（93 题） =================
+   d: 维度；a: 第一极选项；b: 第二极选项。
+   计分只看 first/second 语义，左右展示顺序由确定性算法打乱。 */
+const QUESTIONS = [
+  // ── E/I（24 题，a=外向 E，b=内向 I）──
+  {d:'EI',a:'周五晚上有场热闹的聚会，我通常都会去，人多才热闹',b:'比起聚会，我更想在家安静待着'},
+  {d:'EI',a:'婚宴饭桌上，我会主动和同桌的人聊起来',b:'我一般安静吃饭，等别人来找我聊'},
+  {d:'EI',a:'长假里让我"回血"的方式是约朋友出去玩',b:'长假里让我"回血"的方式是独处或只和最亲的人待着'},
+  {d:'EI',a:'在全是陌生人的聚会上，我会主动开口打破沉默',b:'在全是陌生人的聚会上，我一般等别人先开口'},
+  {d:'EI',a:'我的朋友很多，各行各业都有',b:'我的知心朋友不多，但关系都很深'},
+  {d:'EI',a:'电话响起来，我的第一反应是直接接',b:'电话响起来，我常常想等它响完再看漏接'},
+  {d:'EI',a:'一整天社交结束后，我意犹未尽还想找人聊',b:'一整天社交结束后，我电量耗尽只想独处'},
+  {d:'EI',a:'电梯里遇到半熟的人，我会主动打招呼寒暄',b:'电梯里遇到半熟的人，我点头微笑就好'},
+  {d:'EI',a:'小组活动里我常是带动气氛的那个人',b:'小组活动里我常是倾听和记录的那个人'},
+  {d:'EI',a:'思考问题时我喜欢说出来和大家讨论',b:'思考问题时我习惯自己先想清楚再说'},
+  {d:'EI',a:'周末我更愿意把活动安排得满满当当',b:'周末我更愿意留白，随性安排'},
+  {d:'EI',a:'别人对我的第一印象通常是"自来熟"',b:'别人对我的第一印象通常是"慢热"'},
+  {d:'EI',a:'加入新群聊或新环境，我很快认识不少人',b:'加入新群聊或新环境，我会先观察一阵再融入'},
+  {d:'EI',a:'连续几天一个人待着，我会憋得慌想找人说话',b:'连续几天一个人待着，我感觉很舒服'},
+  {d:'EI',a:'聚会拍照时，我常站在中间招呼大家',b:'聚会拍照时，我更常在边上帮忙按快门'},
+  {d:'EI',a:'我说话边说边想，越聊越起劲',b:'我说话想好再说，言简意赅'},
+  {d:'EI',a:'旅行时遇到当地人，我很乐意聊上几句',b:'旅行时除非必要，我不太主动和陌生人聊'},
+  {d:'EI',a:'在 KTV 或集体活动里，我常是组织者或麦霸',b:'在 KTV 或集体活动里，我更喜欢当观众鼓掌'},
+  {d:'EI',a:'我的能量更多来自和外界互动',b:'我的能量更多来自独处的内心世界'},
+  {d:'EI',a:'工作群里有人抛出话题，我常会接话',b:'工作群里我一般潜水看完不说话'},
+  {d:'EI',a:'轮流向新成员自我介绍的环节，我轻松应对',b:'轮流向新成员自我介绍的环节，我有点紧张'},
+  {d:'EI',a:'我更爱聊人、近况和有趣的见闻',b:'我更爱聊想法、观点和兴趣'},
+  {d:'EI',a:'到了一个新城市，我想先认识些人',b:'到了一个新城市，我想先自己逛逛'},
+  {d:'EI',a:'总结我的社交风格是"见面熟"',b:'总结我的社交风格是"圈子小而稳"'},
+  // ── S/N（24 题，a=实感 S，b=直觉 N）──
+  {d:'SN',a:'读一本书时，我更关注情节与事实细节',b:'读一本书时，我更关注背后的隐喻与可能性'},
+  {d:'SN',a:'学新东西我偏好按步骤跟着教程做',b:'学新东西我偏好先理解原理再自由发挥'},
+  {d:'SN',a:'描述一次旅行，我会先说去了哪、吃了什么',b:'描述一次旅行，我会先说最触动的瞬间和感受'},
+  {d:'SN',a:'我平时想得更多的是今天要做的具体事',b:'我平时想得更多的是未来的种种可能'},
+  {d:'SN',a:'别人觉得我的想法很接地气',b:'别人觉得我的想法天马行空'},
+  {d:'SN',a:'看到一幅抽象画，我先想"这画的是什么"',b:'看到一幅抽象画，我直接感受它的情绪'},
+  {d:'SN',a:'记路我靠地标和具体路线',b:'记路我靠大致方向和直觉'},
+  {d:'SN',a:'我更信任亲身经验',b:'我更信任灵感直觉'},
+  {d:'SN',a:'头脑风暴时我常把话题拉回可落地的部分',b:'头脑风暴时我常提出跳脱的新点子'},
+  {d:'SN',a:'日常工作我偏好清晰明确的任务',b:'日常工作我偏好有探索空间的方向'},
+  {d:'SN',a:'别人给我讲道理时，我更注意逻辑和事实',b:'别人给我讲道理时，我更注意弦外之音'},
+  {d:'SN',a:'我的注意力大多在眼前正在发生的事上',b:'我的注意力经常飘走，在想别的事'},
+  {d:'SN',a:'学一门技能，练到熟练好用我就满足了',b:'学一门技能，我总想搞懂背后的为什么'},
+  {d:'SN',a:'我更欣赏踏实可靠的人',b:'我更欣赏创意十足的人'},
+  {d:'SN',a:'聊科幻和脑洞话题，我的兴趣一般',b:'聊科幻和脑洞话题，我眼睛发光'},
+  {d:'SN',a:'做计划我倾向于沿用以往可行的方法',b:'做计划我总想试试新方法'},
+  {d:'SN',a:'看说明书或攻略，我会仔细看完再动手',b:'看说明书或攻略，我大概看看就上手试'},
+  {d:'SN',a:'我记得更清楚的是具体发生的事情',b:'我记得更清楚的是当时的氛围和意义'},
+  {d:'SN',a:'接到从零开始的任务，我希望有参照模板',b:'接到从零开始的任务，我兴奋于自己设计'},
+  {d:'SN',a:'我说话更多用例子和数字',b:'我说话更多用比喻和联想'},
+  {d:'SN',a:'到新环境我先留意设施、动线这些实际细节',b:'到新环境我先感受这里的氛围给我的感觉'},
+  {d:'SN',a:'好用的传统和经验，我会直接沿用',b:'对于传统和经验，我总想想能不能换个方式'},
+  {d:'SN',a:'我的笔记本上更多是清单、待办和事实',b:'我的笔记本上更多是闪念、点子和随想'},
+  {d:'SN',a:'玩解谜游戏，我擅长按逻辑线索逐一排查',b:'玩解谜游戏，我常常突然灵光一现'},
+  // ── T/F（24 题，a=思考 T，b=情感 F）──
+  {d:'TF',a:'朋友向我吐槽，我的第一反应是帮TA分析问题出在哪',b:'朋友向我吐槽，我的第一反应是先安慰TA的情绪'},
+  {d:'TF',a:'做决定时我更看重合不合理',b:'做决定时我更看重大家舒不舒服'},
+  {d:'TF',a:'别人觉得我说话直接，偶尔扎心',b:'别人觉得我说话温和，照顾感受'},
+  {d:'TF',a:'看感人的电影情节，我能理解但很少落泪',b:'看感人的电影情节，我很容易共情落泪'},
+  {d:'TF',a:'发生分歧时，我更在意谁说得对',b:'发生分歧时，我更在意关系有没有受伤'},
+  {d:'TF',a:'别人向我请教，我习惯直接指出问题',b:'别人向我请教，我会先肯定再委婉建议'},
+  {d:'TF',a:'评价一个方案，我先看逻辑是否自洽',b:'评价一个方案，我先看大家能否接受'},
+  {d:'TF',a:'被批评时，我首先想TA说得有没有道理',b:'被批评时，我首先想TA为什么这样说我'},
+  {d:'TF',a:'同事的方案明显有问题，我会直说',b:'同事的方案明显有问题，我会找个委婉的方式提'},
+  {d:'TF',a:'我认为好的决定是客观上最优的',b:'我认为好的决定是让大多数人舒服的'},
+  {d:'TF',a:'共情能力自评：能理解情绪但不太被带走',b:'共情能力自评：很容易被别人的情绪感染'},
+  {d:'TF',a:'遇到"讲道理还是讲感情"，我常选讲道理',b:'遇到"讲道理还是讲感情"，我常选先照顾心情'},
+  {d:'TF',a:'买手机我主要看参数和性价比',b:'买手机我主要看手感和眼缘'},
+  {d:'TF',a:'我安慰人的方式是给建议帮解决问题',b:'我安慰人的方式是陪着TA听TA说'},
+  {d:'TF',a:'"对事不对人"我完全做得到',b:'"对事不对人"我做不到那么理性'},
+  {d:'TF',a:'玩狼人杀或辩论，我享受逻辑对决',b:'玩狼人杀或辩论，我容易心软下不去手'},
+  {d:'TF',a:'"被认可"比"被需要"更让我开心',b:'"被需要"比"被认可"更让我开心'},
+  {d:'TF',a:'面对求助信息，我先看事情本身怎么解决',b:'面对求助信息，我先看对方有多难'},
+  {d:'TF',a:'群里有人说了不合时宜的话，我可能直接指出来',b:'群里有人说了不合时宜的话，我会想着怎么圆过去'},
+  {d:'TF',a:'说服我更有效的是数据和逻辑',b:'说服我更有效的是故事和情绪'},
+  {d:'TF',a:'处理纠纷类的事，我倾向快刀斩乱麻',b:'处理纠纷类的事，我常常拖着不忍心'},
+  {d:'TF',a:'我对朋友的关心更多体现为帮TA把事情办了',b:'我对朋友的关心更多体现为陪TA说说话'},
+  {d:'TF',a:'别人哭的时候，我第一反应是想帮TA解决问题',b:'别人哭的时候，我第一反应是想抱抱TA'},
+  {d:'TF',a:'规则与温情冲突时，我更常选规则',b:'规则与温情冲突时，我更常选温情'},
+  // ── J/P（21 题，a=判断 J，b=知觉 P）──
+  {d:'JP',a:'出门旅行我喜欢做好攻略按计划走',b:'出门旅行我喜欢走哪算哪'},
+  {d:'JP',a:'我的待办清单做完一项勾一项',b:'我的待办清单列了但不常看'},
+  {d:'JP',a:'截止日期前我通常提前完成',b:'截止日期前我通常赶在最后一刻'},
+  {d:'JP',a:'我的桌面和房间整洁有序',b:'我的桌面和房间随意，但我知道东西在哪'},
+  {d:'JP',a:'约好的时间我习惯提前到',b:'约好的时间我习惯卡点甚至迟到'},
+  {d:'JP',a:'计划被临时打乱，我会烦躁想按原计划',b:'计划被临时打乱，我无所谓，见招拆招'},
+  {d:'JP',a:'购物前我倾向列好清单直奔目标',b:'购物时我喜欢逛到喜欢再买'},
+  {d:'JP',a:'"说走就走的旅行"我向往，但还是会做个大致规划',b:'"说走就走的旅行"这才是旅行该有的样子'},
+  {d:'JP',a:'工作学习我更像每天按部就班',b:'工作学习我更像状态来了猛干一顿'},
+  {d:'JP',a:'点外卖选餐厅，我常用固定的几家',b:'点外卖选餐厅，我爱天天换新花样'},
+  {d:'JP',a:'我的决定想好就定，不爱改',b:'我的决定到最后一刻都可能变'},
+  {d:'JP',a:'接到新任务，我先拆解计划和时间表',b:'接到新任务，我先干起来再说'},
+  {d:'JP',a:'对于变化，我能不变就不变',b:'对于变化，我觉得变化才有趣'},
+  {d:'JP',a:'我的文件命名和归档规规矩矩',b:'我的电脑里到处都是"新建文件夹"'},
+  {d:'JP',a:'休闲时间我通常有安排',b:'休闲时间我看当时心情'},
+  {d:'JP',a:'我更受不了计划被打乱',b:'我更受不了生活一成不变'},
+  {d:'JP',a:'每月开支我大致有预算',b:'每月开支我花完再说'},
+  {d:'JP',a:'收拾行李箱我会列清单逐项装',b:'收拾行李箱我想到什么塞什么'},
+  {d:'JP',a:'玩桌游我偏好规则清楚按规矩玩',b:'玩桌游我偏好边玩边改规则图个开心'},
+  {d:'JP',a:'朋友临时约我今晚出门，我先看计划排没排满',b:'朋友临时约我今晚出门，走啊现在！'},
+  {d:'JP',a:'一天结束时，我喜欢知道明天要做什么',b:'一天结束时，管他呢，明天再说'}
+];
+
+/* ================= 维度与类型数据 ================= */
+const DIMS = {
+  EI:{ left:{k:'E',name:'外向',color:'var(--e)'}, right:{k:'I',name:'内向',color:'var(--i)'} },
+  SN:{ left:{k:'S',name:'实感',color:'var(--s)'}, right:{k:'N',name:'直觉',color:'var(--n)'} },
+  TF:{ left:{k:'T',name:'思考',color:'var(--t)'}, right:{k:'F',name:'情感',color:'var(--f)'} },
+  JP:{ left:{k:'J',name:'判断',color:'var(--j)'}, right:{k:'P',name:'知觉',color:'var(--p)'} }
+};
+const DIM_ORDER = ['EI','SN','TF','JP'];
+const LETTER_COLOR = {E:'var(--e)',I:'var(--i)',S:'var(--s)',N:'var(--n)',T:'var(--t)',F:'var(--f)',J:'var(--j)',P:'var(--p)'};
+const TYPE_NAMES = {
+  INTJ:'建筑师', INTP:'逻辑学家', ENTJ:'指挥官', ENTP:'辩论家',
+  INFJ:'提倡者', INFP:'调停者', ENFJ:'主人公', ENFP:'竞选者',
+  ISTJ:'物流师', ISFJ:'守卫者', ESTJ:'总经理', ESFJ:'执政官',
+  ISTP:'鉴赏家', ISFP:'探险家', ESTP:'企业家', ESFP:'表演者'
+};
+const STORE_KEY = 'mbti_party_v1';
+const TOTAL = QUESTIONS.length; /* 93 */
+
+/* ================= 状态与存取 ================= */
+let storageOK = true; /* 隐私模式等场景 localStorage 可能不可用，降级为可玩但无续答 */
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    if(!Array.isArray(data.answers) || data.answers.length !== TOTAL) return null;
+    return data;
+  }catch(e){ storageOK = false; return null; }
+}
+function saveState(answers){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({answers})); }
+  catch(e){
+    if(storageOK){
+      storageOK = false;
+      toast('当前浏览器无法保存进度，刷新后需重新作答');
+    }
+  }
+}
+function clearState(){ try{ localStorage.removeItem(STORE_KEY); }catch(e){} }
+function doneCount(answers){
+  let n = 0;
+  for(const a of answers){ if(a === 'a' || a === 'b') n++; }
+  return n;
+}
+
+/* ================= 视图切换 ================= */
+const $ = id => document.getElementById(id);
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ================= 欢迎页 ================= */
+function renderWelcome(){
+  const st = loadState();
+  const done = st ? doneCount(st.answers) : 0;
+  const btnStart = $('btn-start');
+  $('btn-fresh').hidden = true;
+  if(done === 0){
+    btnStart.textContent = '开始测评';
+    btnStart.onclick = startQuiz;
+  }else if(done < TOTAL){
+    btnStart.textContent = '继续作答（已完成 ' + done + '/' + TOTAL + '）';
+    btnStart.onclick = startQuiz;
+    $('btn-fresh').hidden = false;
+  }else{
+    btnStart.textContent = '查看上次结果';
+    btnStart.onclick = () => renderResult(st.answers);
+    $('btn-fresh').hidden = false;
+  }
+  showScreen('screen-welcome');
+}
+function startQuiz(){
+  const st = loadState();
+  const answers = (st && doneCount(st.answers) > 0 && doneCount(st.answers) < TOTAL) ? st.answers.slice() : new Array(TOTAL).fill(null);
+  showScreen('screen-quiz');
+  renderQuestion(answers);
+}
+
+/* ================= 答题页 =================
+   选项左右顺序做确定性打乱（同一题每次打开顺序一致，避免"总选 A"的反应偏差） */
+function isFlipped(idx){ return (idx * 7919 + 11) % 2 === 0; }
+let currentAnswers = null;
+let currentIndex = 0;
+
+function renderQuestion(answers){
+  currentAnswers = answers;
+  let idx = answers.findIndex(x => x === null);
+  if(idx === -1){ renderResult(answers); return; }
+  renderQuestionAt(idx);
+}
+function renderQuestionAt(idx){
+  currentIndex = idx;
+  const q = QUESTIONS[idx];
+  const flip = isFlipped(idx);
+  $('q-now').textContent = idx + 1;
+  $('q-total').textContent = ' / ' + TOTAL;
+  $('q-fill').style.width = (idx / TOTAL * 100) + '%';
+  $('q-text').textContent = '哪句更像你？';
+  $('opt-a-text').textContent = flip ? q.b : q.a;
+  $('opt-b-text').textContent = flip ? q.a : q.b;
+  /* 已答题回显：高亮之前选过的选项，用户可改选或原样确认 */
+  const chosen = currentAnswers[idx]; /* 'a'=第一极 | 'b'=第二极 | null */
+  const screenA = flip ? 'b' : 'a';   /* 屏幕 A 对应的语义选项 */
+  const optA = $('opt-a'), optB = $('opt-b');
+  optA.classList.toggle('selected', chosen === screenA);
+  optB.classList.toggle('selected', chosen !== null && chosen !== screenA);
+  $('btn-prev').hidden = idx === 0;
+  $('quiz-foot').textContent = storageOK
+    ? '选择后自动进入下一题 · 进度实时保存'
+    : '选择后自动进入下一题 · 当前进度保存不可用';
+  $('opt-a').blur(); $('opt-b').blur();
+}
+
+function choose(choice){
+  /* choice 是"屏幕上的 A/B"；换算回 first/second 语义 */
+  const flip = isFlipped(currentIndex);
+  let semantic;
+  if(choice === 'a') semantic = flip ? 'b' : 'a';
+  else semantic = flip ? 'a' : 'b';
+  currentAnswers[currentIndex] = semantic;
+  saveState(currentAnswers);
+  /* 前进到下一个未答题：误操作回改后可直接回到最新进度 */
+  let next = -1;
+  for(let i = currentIndex + 1; i < TOTAL; i++){
+    if(currentAnswers[i] === null){ next = i; break; }
+  }
+  if(next === -1){ renderResult(currentAnswers); }
+  else{ renderQuestionAt(next); }
+}
+
+/* ================= 计分与结果页 ================= */
+function computeResult(answers){
+  const stats = {};
+  DIM_ORDER.forEach(d => stats[d] = {first:0, total:0});
+  answers.forEach((ans, i) => {
+    const q = QUESTIONS[i];
+    if(ans !== 'a' && ans !== 'b') return;
+    stats[q.d].total++;
+    if(ans === 'a') stats[q.d].first++;
+  });
+  const letters = [], details = [];
+  DIM_ORDER.forEach(d => {
+    const dim = DIMS[d];
+    const st = stats[d];
+    const leftPct = st.total ? Math.round(st.first / st.total * 100) : 50;
+    const rightPct = 100 - leftPct;
+    /* 平局取左极（E/S/T/J）；JP 为奇数题不存在平局 */
+    const letter = leftPct >= rightPct ? dim.left.k : dim.right.k;
+    letters.push(letter);
+    details.push({d, leftPct, rightPct});
+  });
+  return {type: letters.join(''), details};
+}
+
+function renderResult(answers){
+  saveState(answers);
+  const {type, details} = computeResult(answers);
+  const box = $('r-letters');
+  box.innerHTML = '';
+  type.split('').forEach(ch => {
+    const span = document.createElement('span');
+    span.textContent = ch;
+    span.style.color = LETTER_COLOR[ch];
+    box.appendChild(span);
+  });
+  $('r-name').textContent = TYPE_NAMES[type] || type;
+  $('r-tag').textContent = '93 题完整测评结果';
+  const spectra = $('r-spectra');
+  spectra.innerHTML = '';
+  details.forEach(({d, leftPct, rightPct}) => {
+    const dim = DIMS[d];
+    const item = document.createElement('div');
+    item.innerHTML =
+      '<div class="spec-head">' +
+        '<span class="pct" style="color:' + dim.left.color + '">' + leftPct + '%</span>' +
+        '<span class="pct" style="color:' + dim.right.color + '">' + rightPct + '%</span>' +
+      '</div>' +
+      '<div class="spec-bar">' +
+        '<div class="left-fill" style="width:' + leftPct + '%;background:' + dim.left.color + '"></div>' +
+        '<div class="axis"></div>' +
+      '</div>' +
+      '<div class="spec-cap"><span>' + dim.left.k + ' · ' + dim.left.name + '</span><span>' + dim.right.k + ' · ' + dim.right.name + '</span></div>';
+    /* 右侧填充 */
+    const bar = item.querySelector('.spec-bar');
+    const rf = document.createElement('div');
+    rf.style.cssText = 'position:absolute;right:0;top:0;bottom:0;border-radius:0 99px 99px 0;width:' + rightPct + '%;background:' + dim.right.color;
+    bar.appendChild(rf);
+    bar.appendChild(item.querySelector('.axis')); /* 轴线保持在最上层 */
+    spectra.appendChild(item);
+  });
+  showScreen('screen-result');
+}
+
+/* ================= 事件绑定 ================= */
+$('opt-a').addEventListener('click', () => choose('a'));
+$('opt-b').addEventListener('click', () => choose('b'));
+$('btn-prev').addEventListener('click', () => {
+  if(currentIndex > 0) renderQuestionAt(currentIndex - 1);
+});
+$('btn-fresh').addEventListener('click', () => {
+  clearState();
+  renderWelcome();
+});
+$('btn-again').addEventListener('click', () => {
+  clearState();
+  renderWelcome();
+});
+$('btn-quit').addEventListener('click', () => $('mask-quit').classList.add('show'));
+$('quit-no').addEventListener('click', () => $('mask-quit').classList.remove('show'));
+$('quit-yes').addEventListener('click', () => {
+  $('mask-quit').classList.remove('show');
+  clearState();
+  renderWelcome();
+  toast('已清空，随时重新开始');
+});
+document.querySelector('#mask-quit').addEventListener('click', e => {
+  if(e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ================= 启动 ================= */
+renderWelcome();
+</script>
+</body>
+</html>
