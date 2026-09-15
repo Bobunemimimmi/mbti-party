@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<!-- MBTI Party v1.2 · 20 题快速版（每维 5 题）· 完整 93 题版见 full.html -->
+<!-- MBTI Party v1.1 · 93 题完整版 · 单文件独立运行 -->
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="20 题快速版 MBTI 风格性格测评（四维各 5 题），单文件网页，零依赖、完全离线可用，聚会破冰娱乐工具。仅供娱乐参考。">
+<meta name="description" content="93 题完整版 MBTI 风格性格测评，单文件网页，零依赖、完全离线可用，聚会破冰娱乐工具。仅供娱乐参考。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231C1B1A'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' font-weight='bold' text-anchor='middle' fill='%23FF6B5E'%3EM%3C/text%3E%3C/svg%3E">
-<title>MBTI 性格测评 · 聚会版</title>
+<title>MBTI 性格测评 · 聚会版（93 题完整版）</title>
 <style>
   :root{
     --paper:#FBF9F4; --ink:#1C1B1A; --sub:#6E6A63; --line:#E7E2D8; --card:#FFFFFF;
@@ -93,9 +93,9 @@
   <div class="wrap">
     <div class="eyebrow">MBTI 性格测评 · 聚会版</div>
     <h1 class="hero-mbti" aria-label="MBTI"><span class="l-m">M</span><span class="l-b">B</span><span class="l-t">T</span><span class="l-i">I</span></h1>
-  <p class="hero-sub">20 道题，看清你站在每条性格光谱的哪一端。</p>
-  <div class="facts">
-    <span class="fact">20 题 · 约 3 分钟</span>
+    <p class="hero-sub">93 道题，看清你站在每条性格光谱的哪一端。</p>
+    <div class="facts">
+      <span class="fact">93 题 · 约 12 分钟</span>
       <span class="fact">进度自动保存</span>
       <span class="fact">离线可用 · 数据不出设备</span>
     </div>
@@ -155,7 +155,7 @@
 /* ================= 题库（93 题） =================
    d: 维度；a: 第一极选项；b: 第二极选项。
    计分只看 first/second 语义，左右展示顺序由确定性算法打乱。 */
-const FULL_QUESTIONS = [
+const QUESTIONS = [
   // ── E/I（24 题，a=外向 E，b=内向 I）──
   {d:'EI',a:'周五晚上有场热闹的聚会，我通常都会去，人多才热闹',b:'比起聚会，我更想在家安静待着'},
   {d:'EI',a:'婚宴饭桌上，我会主动和同桌的人聊起来',b:'我一般安静吃饭，等别人来找我聊'},
@@ -255,10 +255,6 @@ const FULL_QUESTIONS = [
   {d:'JP',a:'一天结束时，我喜欢知道明天要做什么',b:'一天结束时，管他呢，明天再说'}
 ];
 
-/* v1.2：从完整题库中每维精选 5 题（EI/SN/TF/JP），共 20 题，约 3 分钟。
-   完整 93 题版见同目录 full.html。 */
-const QUESTIONS = [0,2,4,6,11, 25,27,31,32,40, 48,49,50,51,52, 72,74,75,78,89].map(i => FULL_QUESTIONS[i]);
-
 /* ================= 维度与类型数据 ================= */
 const DIMS = {
   EI:{ left:{k:'E',name:'外向',color:'var(--e)'}, right:{k:'I',name:'内向',color:'var(--i)'} },
@@ -274,7 +270,7 @@ const TYPE_NAMES = {
   ISTJ:'物流师', ISFJ:'守卫者', ESTJ:'总经理', ESFJ:'执政官',
   ISTP:'鉴赏家', ISFP:'探险家', ESTP:'企业家', ESFP:'表演者'
 };
-const STORE_KEY = 'mbti_party_v2'; /* v1.2 新 key：旧 93 题记录与 20 题版互不干扰 */
+const STORE_KEY = 'mbti_party_full_v1'; /* 与 20 题版分开存储，互不覆盖 */
 const TOTAL = QUESTIONS.length; /* 93 */
 
 /* ================= 状态与存取 ================= */
@@ -407,7 +403,7 @@ function computeResult(answers){
     const st = stats[d];
     const leftPct = st.total ? Math.round(st.first / st.total * 100) : 50;
     const rightPct = 100 - leftPct;
-    /* 每维 5 题为奇数，不会出现平局；兜底规则：相等时取左极（E/S/T/J） */
+    /* 平局取左极（E/S/T/J）；JP 为奇数题不存在平局 */
     const letter = leftPct >= rightPct ? dim.left.k : dim.right.k;
     letters.push(letter);
     details.push({d, leftPct, rightPct});
@@ -427,7 +423,7 @@ function renderResult(answers){
     box.appendChild(span);
   });
   $('r-name').textContent = TYPE_NAMES[type] || type;
-  $('r-tag').textContent = '20 题快速测评结果';
+  $('r-tag').textContent = '93 题完整测评结果';
   const spectra = $('r-spectra');
   spectra.innerHTML = '';
   details.forEach(({d, leftPct, rightPct}) => {
